@@ -203,3 +203,129 @@ components/Tab/index.less
 	}
 }
 ```
+
+## 6. 下拉菜单动画
+### 6.1  /Home/index.js
+src/containers/Home/index.js
+```js
+import React,{Component} from 'react';
+import HomeHeader from '../../components/HomeHeader';
+export default class Home extends Component{
+	render() {
+		return (
+			<div>
+				<HomeHeader></HomeHeader>
+			</div>
+		)
+	}
+}
+```
+
+### 6.2 HomeHeader/index.js
+ src/components/HomeHeader/index.js
+```js
+import React, { Component } from 'react';
+import logo from '../../common/images/logo.png';
+import './index.less'
+import {CSSTransition,TransitionGroup} from 'react-transition-group';
+export default class HomeHeader extends Component {
+	constructor(props) {
+		super(props);
+		this.state={
+			showList:false
+		}
+	}
+	render() {
+		return (
+			<div className="home-header">
+				<div className="header-menu">
+					<img src={logo} alt="logo" />
+					<div onClick={() => this.setState({showList:!this.state.showList})}>
+						{
+							this.state.showList?<i className="iconfont icon-guanbi"></i>:<i className="iconfont icon-uilist"></i>
+						}
+					</div>
+				</div>
+				<TransitionGroup>
+						{
+							this.state.showList&&<CSSTransition
+							timeout={500}
+							classNames="fade"
+							  ><ul className="menu-list">
+									<li type="1">Node课程培训</li>
+									<li type="2">HTML课程培训</li>
+									<li type="3">视频课程</li>
+									<li type="4">文档课件</li>
+								</ul></CSSTransition>
+						}
+				</TransitionGroup>	
+
+			</div>
+		);
+	}
+}
+```
+
+### 6.3 HomeHeader/index.less
+ src/components/HomeHeader/index.less
+```less
+.home-header{
+	background:#2A2A2A;
+	height:56px;
+	width:100%;
+	position:fixed;
+	top:0;
+	left:0;
+	.header-menu{
+		display:flex;
+		height:56px;
+		justify-content: space-between;
+		align-items: center;
+		img{
+			height:30px;
+			width:105px;
+			margin-left:10px;
+		}
+		i{
+			color:#FFF;
+			margin-right:10px;
+		}
+	}
+	.menu-list{
+		position: absolute;
+		top:56px;
+		left:0;
+		width:100%;
+		background-color:#000;
+		li{
+			border-top:1px solid #464646;
+			height:43px;
+			line-height:43px;
+			text-align: center;
+			color:#FFF;
+			border-top:1px solid #464646;
+			&.active{
+				color:green;
+			}
+		}
+	}
+}
+.fade-enter {
+	opacity: 0.01;
+}
+.fade-enter-active {
+	opacity: 1;
+	transition: opacity 500ms ease-in;
+}
+.fade-exit {
+	opacity: 1;
+}
+.fade-exit-active {
+	opacity: 0.01;
+	transition: opacity 500ms ease-in;
+}
+
+```
+
+## 参考
+- [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
