@@ -14,12 +14,20 @@ yarn add  style-loader css-loader less-loader less url-loader
 yarn add webpack webpack-cli webpack-dev-server
 ```
 
-## 3. 项目目录
+## 3. 说明
+### 3.1 项目目录结构 
 - src 项目源码目录
 - main 入口文件
 - containers 容器
 - components 组件
 - common 公共样式
+
+### 3.2 存入Redux
+- 服务端接口
+- 用fetch获取接口方法
+- 通过action将获取的数据发送到reducer
+- 通过reducer改变redux中的状态
+
 
 ## 4.配置webpack.config.js
 ```js
@@ -445,5 +453,149 @@ export default function (state=initState,action) {
 }
 ```
 
+## 8.轮播图
+### 8.1 Home/index.less
+src/containers/Home/index.less
+```js
+.home{
+	.main-content{
+		position: fixed;
+		top:56px;
+		bottom:54px;
+		overflow: hidden;
+		overflow-y: scroll;
+		width:100%;
+	}
+}
+```
+
+### 8.2 Home/index.js
+containers/Home/index.js
+```js
+import React, { Component } from 'react';
+import ReactSwipe from 'react-swipe';
+import './index.less';
+
+export default class Swiper extends Component {
+	constructor(props) {
+		super(props);
+		this.state={index:0};
+	}
+	render() {
+		let options={
+			continuous: true,
+			callback:(index)=> {
+				this.setState({index});
+			}
+		}
+		let swiper=(
+			<ReactSwipe className="carousel" swipeOptions={options}>
+						{this.props.sliders.map((item,index) => (
+							<div key={index}><img src={item}/></div>
+						))}
+			</ReactSwipe>
+		)
+		return (
+			<div className="home-sliders">
+				{this.props.sliders.length>0? swiper:null}
+				<div className="dots">
+					{
+						this.props.sliders.map((item,index) => (
+							<span key={index} className={`dot ${this.state.index ==index?'active':''}`}></span>
+						))
+					}
+				</div>
+			</div>
+		);
+	}
+}
+```
+
+### 8.3 /Home/index.less
+containers/Home/index.less
+```less
+.home-sliders{
+	position: relative;
+	img{
+		width:100%;
+	}
+	.dots{
+		width:100%;
+		position: absolute;
+		bottom:7px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		.dot{
+			width:8px;
+			height:8px;
+			border-radius: 5px;
+			background-color:#FFF;
+			margin-left:5px;
+			&.active{
+				background-color:salmon;
+			}
+		}
+	}
+}
+```
+
+### 8.4 /api/index.js
+/api/index.js
+```less
+const API_HOST='http://localhost:3000';
+export const get=(url) => {
+	return fetch(API_HOST+url,{
+		method: 'GET',
+		credentials: 'include',//跨域携带cookie
+		headers: {
+			accept:'application/json'
+		}
+	}).then(res=>res.json());
+}
+export const post=(url,data) => {
+	return fetch(API_HOST+url,{
+		method: 'POST',
+		body: JSON.stringify(data),
+		headers: {
+			'Content-Type': 'application/json',
+			'Accept':'application/json'
+		}
+	});
+}
+```
+
+### 8.5 /api/home.js
+/api/home.js
+```less
+import {get} from './index';
+export const getSliders=() => {
+	return get('/sliders');
+}
+```
+
+### 8.6 /server/app.js
+/server/app.js
+```js
+let express=require('express');
+let app=express();
+app.use(function (req,res,next) {
+	res.header('Access-Control-Allow-Methods','PUT,POST,GET,DELETE,OPTIONS');
+	res.header('Access-Control-Allow-Origin','http://localhost:8080');
+	res.header('Access-Control-Allow-Credentials','true');
+	if (req.method === 'OPTIONS') {
+		return res.sendStatus(200);
+	}
+	next();
+});
+app.listen(3000);
+let sliders=require('./mock/sliders');
+app.get('/sliders',function (req,res) {
+	res.json(sliders);
+});
+```
+
+
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
+- [react-swipe](https://github.com/voronianski/react-swipe)
