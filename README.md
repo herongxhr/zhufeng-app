@@ -327,5 +327,123 @@ export default class HomeHeader extends Component {
 
 ```
 
+## 7. 使用redux修改状态
+### 7.1 Home/index.js
+src/containers/Home/index.js
+```js
+import React,{Component} from 'react';
+import HomeHeader from '../../components/HomeHeader';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/home';
+class Home extends Component{
+	render() {
+		return (
+			<div>
+				<HomeHeader
+					currentCategory={this.props.currentCategory}
+					setCurrentCategory={this.props.setCurrentCategory}></HomeHeader>
+			</div>
+		)
+	}
+}
+export default connect(state => state.home,actions)(Home);
+```
+
+### 7.2 containers/App.js
+src/containers/App.js
+```js
+import React,{Component,Fragment} from 'react';
+import Tab from '../components/Tab';
+import '../common/index.less'
+import  {Provider} from 'react-redux';
+import store from '../store';
+export default class App extends Component {
+	render() {
+		return (
+			<Provider store={store}>
+				<Fragment>
+				  {this.props.children}
+				  <Tab/>
+				</Fragment>
+			</Provider>
+		);
+	}
+}
+```
+
+### 7.3 Home/index.js
+src/containers/Home/index.js
+```js
+import React,{Component} from 'react';
+import HomeHeader from '../../components/HomeHeader';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/home';
+class Home extends Component{
+	render() {
+		return (
+			<div>
+				<HomeHeader
+					currentCategory={this.props.currentCategory}
+					setCurrentCategory={this.props.setCurrentCategory}></HomeHeader>
+			</div>
+		)
+	}
+}
+export default connect(state => state.home,actions)(Home);
+```
+
+### 7.4 store/index.js
+store/index.js
+```js
+import {createStore} from 'redux';
+import reducers from './reducers';
+let store=createStore(reducers);
+export default store;
+```
+
+### 7.5 store/action-types.js
+store/action-types.js
+```js
+export const SET_CURRENT_CATEGORY='SET_CURRENT_CATEGORY';
+```
+
+### 7.6 actions/home.js
+store/actions/home.js
+```js
+import * as types from '../action-types';
+export default {
+	setCurrentCategory(currentCategory) {
+		return {type:types.SET_CURRENT_CATEGORY,currentCategory};
+	}
+}
+```
+
+### 7.7 reducers/index.js
+store/reducers/index.js
+```js
+import home from './home';
+import {combineReducers} from 'redux';
+export default combineReducers({
+	home
+});
+```
+
+### 7.8 reducers/home.js
+store/reducers/home.js
+```js
+import * as types from '../action-types';
+let initState={
+	currentCategory : 0
+}
+
+export default function (state=initState,action) {
+	switch (action.type) {
+		case types.SET_CURRENT_CATEGORY:
+			return {...state,currentCategory:action.currentCategory};
+	}
+	return state;
+}
+```
+
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
