@@ -9,15 +9,17 @@ export default class HomeHeader extends Component {
 			showList:false
 		}
 	}
-	setCurrentCategory = (event)=> {
+	setCurrentCategory=(event) => {
+		let type = event.target.dataset.type;
 		this.setState({
 			showList:false
 		},() => {
-			this.props.setCurrentCategory(event.target.dataset.type);
+			this.props.setCurrentCategory(type);
+			this.props.fetchLessons();
 		});
 	}
 	render() {
-		let currentCategory = this.props.currentCategory;
+		let currentCategory=this.props.currentCategory;
 		return (
 			<div className="home-header">
 				<div className="header-menu">
@@ -33,9 +35,9 @@ export default class HomeHeader extends Component {
 							this.state.showList&&<CSSTransition
 							        timeout={500}
 							        classNames="fade"
-						><ul className="menu-list" onClick={this.setCurrentCategory}>
-								<li data-type="react" className={currentCategory == "1"?"active":""}>React课程</li>
-								<li data-type="vue" className={currentCategory=="2"? "active":""}>Vue课程</li>
+						><ul className="menu-list" onClick={event=>this.setCurrentCategory(event)}>
+								<li data-type="react" className={currentCategory == "react"?"active":""}>React课程</li>
+								<li data-type="vue" className={currentCategory=="vue"? "active":""}>Vue课程</li>
 								</ul></CSSTransition>
 						}
 				</TransitionGroup>	

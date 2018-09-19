@@ -19,7 +19,7 @@ let lessons=require('./mock/lessons');
 app.get('/lessons/:type',function (req,res) {
 	let type=req.params.type;
 	let {offset,limit}=req.query;
-	offset=isNaN(offset)? 1:parseInt(offset);
+	offset=isNaN(offset)? 0:parseInt(offset);
 	limit=isNaN(limit)? 5:parseInt(limit);
 	let data=_.cloneDeep(lessons);
 	if (type!='all') {

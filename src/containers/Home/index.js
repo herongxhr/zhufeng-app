@@ -5,22 +5,31 @@ import actions from '../../store/actions/home';
 import './index.less';
 import Swiper from '../../components/Swiper';
 import Loading from '../../components/Loading';
-
+import {upLoadMore,store} from '../../utils';
 class Home extends Component{
 	componentDidMount() {
-		this.props.getSliders();
-		this.props.getLessons();
+		if (this.props.lessons.list.length == 0) {
+			this.props.getSliders();
+		    this.props.getLessons();
+		} else {
+			this.mainContent.scrollTop=store.get('scrollTop');
+		}
+		upLoadMore(this.mainContent,this.props.getLessons);
+	}
+	componentWillUnmount() {
+		store.set('scrollTop',this.mainContent.scrollTop);
 	}
 	render() {
-		const {currentCategory,setCurrentCategory,lessons:{list,loading,hasMore}}=this.props;
+		const {currentCategory,setCurrentCategory,fetchLessons,lessons:{list,loading,hasMore}}=this.props;
 		return (
 			<div className="home">
 				<HomeHeader
 					currentCategory={currentCategory}
+					fetchLessons={fetchLessons}
 					setCurrentCategory={setCurrentCategory} />
-				<div className="main-content">
+				<div className="main-content" ref={ref=>this.mainContent = ref}>
 					<Swiper sliders={this.props.sliders} />
-					<div className="lesson-list">
+					<div className="lesson-list" >
 						<div><i className="iconfont icon-kecheng-copy"></i>全部课程</div>
 						{
 							list.map(lesson => (

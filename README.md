@@ -595,6 +595,209 @@ app.get('/sliders',function (req,res) {
 });
 ```
 
+## 8. 课程列表
+### 8.1 HomeHeader/index.js
+/components/HomeHeader/index.js
+```js
+import React, { Component } from 'react';
+import logo from '../../common/images/logo.png';
+import './index.less'
+import {CSSTransition,TransitionGroup} from 'react-transition-group';
+export default class HomeHeader extends Component {
+	constructor(props) {
+		super(props);
+		this.state={
+			showList:false
+		}
+	}
+	setCurrentCategory=(event) => {
+		let type = event.target.dataset.type;
+		this.setState({
+			showList:false
+		},() => {
+			this.props.setCurrentCategory(type);
+			this.props.fetchLessons();
+		});
+	}
+	render() {
+		let currentCategory=this.props.currentCategory;
+		return (
+			<div className="home-header">
+				<div className="header-menu">
+					<img src={logo} alt="logo" />
+					<div onClick={() => this.setState({showList:!this.state.showList})}>
+						{
+							this.state.showList?<i className="iconfont icon-guanbi"></i>:<i className="iconfont icon-uilist"></i>
+						}
+					</div>
+				</div>
+				<TransitionGroup>
+						{
+							this.state.showList&&<CSSTransition
+							        timeout={500}
+							        classNames="fade"
+						><ul className="menu-list" onClick={event=>this.setCurrentCategory(event)}>
+								<li data-type="react" className={currentCategory == "react"?"active":""}>React课程</li>
+								<li data-type="vue" className={currentCategory=="vue"? "active":""}>Vue课程</li>
+								</ul></CSSTransition>
+						}
+				</TransitionGroup>	
+
+			</div>
+		);
+	}
+}
+```
+
+### 8.2 Home/index.js
+src/containers/Home/index.js
+```js
+import React,{Component} from 'react';
+import HomeHeader from '../../components/HomeHeader';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/home';
+import './index.less';
+import Swiper from '../../components/Swiper';
+import Loading from '../../components/Loading';
+import {upLoadMore} from '../../utils';
+class Home extends Component{
+	componentDidMount() {
+		this.props.getSliders();
+		this.props.getLessons();
+		upLoadMore(this.mainContent,this.props.getLessons);
+	}
+	render() {
+		const {currentCategory,setCurrentCategory,fetchLessons,lessons:{list,loading,hasMore}}=this.props;
+		return (
+			<div className="home">
+				<HomeHeader
+					currentCategory={currentCategory}
+					fetchLessons={fetchLessons}
+					setCurrentCategory={setCurrentCategory} />
+				<div className="main-content" ref={ref=>this.mainContent = ref}>
+					<Swiper sliders={this.props.sliders} />
+					<div className="lesson-list" >
+						<div><i className="iconfont icon-kecheng-copy"></i>全部课程</div>
+						{
+							list.map(lesson => (
+								<div key={lesson.id} className="lesson">
+									<img src={lesson.poster} />
+									<p>{lesson.title}</p>
+									<p>{lesson.price}</p>
+								</div>
+							))
+						}
+					</div>
+					{
+						loading? <Loading />:(hasMore?<div className="load-more" onClick={this.props.getLessons}>{hasMore?'点击加载更多':'到底了'}</div>:null)
+					}
+				</div>
+				
+			</div>
+		)
+	}
+}
+export default connect(state => state.home,actions)(Home);
+```
+
+### 8.3 store/action-types.js
+src/store/action-types.js
+```js
+export const SET_CURRENT_CATEGORY='SET_CURRENT_CATEGORY';
+
+export const SET_SLIDERS='SET_SLIDERS';
+
+export const SET_LOADING_LESSONS = 'SET_LOADING_LESSONS';
+export const SET_LESSONS='SET_LESSONS';
+export const FETCH_LESSONS='FETCH_LESSONS';
+```
+
+### 8.4 actions/home.js
+src/store/actions/home.js
+```js
+fetchLessons() {
+		return (dispatch,getState) => {
+			let {currentCategory,lessons: {limit,loading}}=getState().home;
+			if (!loading) {
+				dispatch({type:types.SET_LOADING_LESSONS,payload:true});
+				getLessons(currentCategory,0,limit).then(payload => {
+					dispatch({
+						type: types.FETCH_LESSONS,
+						payload
+					});
+				});
+			}
+			
+		}
+	}
+```
+
+### 8.5 reducers/home.js
+src/store/reducers/home.js
+```js
+case types.FETCH_LESSONS:
+			console.log(action.payload);
+			return {
+				...state,
+				lessons: {
+					...state.lessons,
+					loading: false,
+					hasMore:action.payload.hasMore,
+					list: action.payload.list,
+					offset:action.payload.list.length
+				}
+			};
+```
+
+### 8.6 src/utils.js
+src/utils.js
+```js
+export function upLoadMore(domEle,loadMore) {
+	let timer;
+	domEle.addEventListener('scroll',function () {
+		if (timer) clearInterval(timer);
+		timer=setTimeout(function () {
+			let height=domEle.clientHeight;
+			let scrollHeight=domEle.scrollHeight;
+			let scrollTop=domEle.scrollTop;
+			if (scrollTop + height + 10 > scrollHeight) {
+				loadMore();
+			}
+		},100);
+	});
+}
+```
+
+## 9. 记录滚动条位置
+### 9.1 src/utils.js
+src/utils.js
+```js
+export const store =  {
+	set(key,val) {
+		sessionStorage.setItem(key,val);
+	},
+	get(key) {
+		return sessionStorage.getItem(key);
+	}
+}
+```
+
+### 9.2 containers/Home/index.js
+containers/Home/index.js
+```js
+componentDidMount() {
+		if (this.props.lessons.list.length == 0) {
+			this.props.getSliders();
+		    this.props.getLessons();
+		} else {
+			this.mainContent.scrollTop=store.get('scrollTop');
+		}
+		upLoadMore(this.mainContent,this.props.getLessons);
+	}
+	componentWillUnmount() {
+		store.set('scrollTop',this.mainContent.scrollTop);
+	}
+```
 
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)

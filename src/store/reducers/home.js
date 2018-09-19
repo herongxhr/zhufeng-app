@@ -31,6 +31,18 @@ export default function (state=initState,action) {
 					offset:state.lessons.offset+list.length
 				}
 			};
+		case types.FETCH_LESSONS:
+			console.log(action.payload);
+			return {
+				...state,
+				lessons: {
+					...state.lessons,
+					loading: false,
+					hasMore:action.payload.hasMore,
+					list: action.payload.list,
+					offset:action.payload.list.length
+				}
+			};
 	}
 	return state;
 }

@@ -14,14 +14,29 @@ export default {
 			});
 		}
 	},
-	getLessons(){
+	getLessons() {
 		return (dispatch,getState) => {
-			let {currentCategory,lessons:{offset,limit,loading}} = getState().home;
+			let {currentCategory,lessons: {offset,limit,loading}}=getState().home;
 			if (!loading) {
 				dispatch({type:types.SET_LOADING_LESSONS,payload:true});
 				getLessons(currentCategory,offset,limit).then(payload => {
 					dispatch({
 						type: types.SET_LESSONS,
+						payload
+					});
+				});
+			}
+			
+		}
+	},
+	fetchLessons() {
+		return (dispatch,getState) => {
+			let {currentCategory,lessons: {limit,loading}}=getState().home;
+			if (!loading) {
+				dispatch({type:types.SET_LOADING_LESSONS,payload:true});
+				getLessons(currentCategory,0,limit).then(payload => {
+					dispatch({
+						type: types.FETCH_LESSONS,
 						payload
 					});
 				});
