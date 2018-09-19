@@ -5,7 +5,7 @@ import actions from '../../store/actions/home';
 import './index.less';
 import Swiper from '../../components/Swiper';
 import Loading from '../../components/Loading';
-import {upLoadMore,store} from '../../utils';
+import {upLoadMore,store,downRefresh} from '../../utils';
 class Home extends Component{
 	componentDidMount() {
 		if (this.props.lessons.list.length == 0) {
@@ -15,6 +15,7 @@ class Home extends Component{
 			this.mainContent.scrollTop=store.get('scrollTop');
 		}
 		upLoadMore(this.mainContent,this.props.getLessons);
+		downRefresh(this.mainContent,this.props.fetchLessons);
 	}
 	componentWillUnmount() {
 		store.set('scrollTop',this.mainContent.scrollTop);

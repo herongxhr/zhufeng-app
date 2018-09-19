@@ -26,6 +26,9 @@ app.get('/lessons/:type',function (req,res) {
 		data=data.filter(lesson=>lesson.type==type);
 	}
 	let list=data.slice(offset,offset+limit);
+	list.forEach(item => {
+		item.title=item.title+Math.random();
+	});
 	let hasMore=offset+limit<data.length;
 	res.json({
 		hasMore,
