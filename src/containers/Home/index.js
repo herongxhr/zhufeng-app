@@ -6,6 +6,7 @@ import './index.less';
 import Swiper from '../../components/Swiper';
 import Loading from '../../components/Loading';
 import {upLoadMore,store,downRefresh} from '../../utils';
+import {Link} from 'react-router-dom';
 class Home extends Component{
 	componentDidMount() {
 		if (this.props.lessons.list.length == 0) {
@@ -22,7 +23,6 @@ class Home extends Component{
 	}
 	render() {
 		const {currentCategory,setCurrentCategory,fetchLessons,lessons:{list,loading,hasMore}}=this.props;
-		console.log('loading',loading,hasMore,'hasMore');
 		return (
 			<div className="home">
 				<HomeHeader
@@ -35,11 +35,13 @@ class Home extends Component{
 						<div><i className="iconfont icon-kecheng-copy"></i>全部课程</div>
 						{
 							list.map(lesson => (
-								<div key={lesson.id} className="lesson">
-									<img src={lesson.poster} />
-									<p>{lesson.title}</p>
-									<p>{lesson.price}</p>
-								</div>
+								<Link to={{pathname:'/detail',state:lesson}}>
+									<div key={lesson.id} className="lesson">
+									  <img src={lesson.poster} />
+									  <p>{lesson.title}</p>
+									  <p>{lesson.price}</p>
+								    </div>
+								</Link>
 							))
 						}
 					</div>

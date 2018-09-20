@@ -22,12 +22,30 @@ yarn add webpack webpack-cli webpack-dev-server
 - components 组件
 - common 公共样式
 
+
 ### 3.2 存入Redux
 - 服务端接口
 - 用fetch获取接口方法
 - 通过action将获取的数据发送到reducer
 - 通过reducer改变redux中的状态
 
+### 3.3 样式
+- [link](http://at.alicdn.com/t/font_pgg5jafnob51m7vi.css)
+- .icon-uilist
+- .icon-xiaolian
+- .icon-xiugaimima
+- .icon-book
+- .icon-fanhui
+- .icon-guanbi
+- .icon-guanyuwomen
+- .icon-jianjie
+- .icon-renturn
+- .icon-xingqiu
+- .icon-kecheng-copy
+- .icon-common-changjianwenti-copy
+- .icon-react
+
+![iconfont](http://img.zhufengpeixun.cn/iconfont.png)
 
 ## 4.配置webpack.config.js
 ```js
@@ -1082,6 +1100,46 @@ containers/Home/index.less
 			text-align:center;
 			border-radius: 5px;
 			background-color:green;
+		}
+	}
+}
+```
+
+## 12. 课程详情
+### 12.1 containers/Detail/index.js
+containers/Detail/index.js
+```js
+import React,{Component} from 'react';
+import {Redirect} from 'react-router-dom';
+import './index.less'
+export default class Detail extends Component{
+	render() {
+		return this.props.location.state?<div class="lesson-detail">
+			<img src={this.props.location.state.poster} />
+			<video src={this.props.location.state} poster={this.props.location.state.poster} controls></video>
+			<p>{this.props.location.state.title}</p>
+			<p>{this.props.location.state.price}</p>
+	    </div>:<Redirect to="/"/>
+	}
+}
+
+```
+
+### 12.2 Detail/index.less
+containers/Detail/index.less
+```less
+.lesson-detail{
+	img,video{
+		width:100%;
+	}
+	p{
+		text-align: center;
+		line-height: 200%;
+		&:nth-of-type(1){
+			color:#CCC;
+		}
+		&:nth-of-type(2){
+			color:red;
 		}
 	}
 }
