@@ -850,7 +850,242 @@ export function downRefresh(domEle,callback) {
 src/containers/Home/index.js
 ```diff
 + downRefresh(this.mainContent,this.props.fetchLessons);
-````
+```
+
+## 11. 改进Loading
+### 11.1 Loading/index.js
+components/Loading/index.js
+```js
+import React, {Component} from 'react';
+import './index.less'
+export default class Loading extends Component {
+  render() {
+    return (
+      <div className="loading">
+         <div className="bars">
+           <div className="bar"></div>
+           <div className="bar"></div>
+           <div className="bar"></div>
+           <div className="bar"></div>
+           <div className="bar"></div>
+           <div className="bar"></div>
+           <div className="cover"></div>
+         </div>
+      </div>
+    )
+  }
+}
+```
+
+### 11.2 Loading/index.less
+Loading/index.less
+```js
+.loading{
+	position: relative;
+	.bars{
+	  width:43px;
+	  height:43px;
+	  position: relative;
+	  margin:0 auto;
+	  .bar{
+		position: absolute;
+		top:0;
+		left:20px;
+		width:3px;
+		height:43px;
+		&::before{
+		  width:3px;
+		  content:'';
+		  display:block;
+		  height:21.5px;
+		  background-color: #000;
+		  border-radius: 10px;
+		}
+		&::after{
+		  width:3px;
+		  content:'';
+		  display:block;
+		  height:21.5px;
+		  background-color: #000;
+		  border-radius: 10px;
+		}
+		&:nth-child(2){
+		  transform: rotate(30deg);
+		}
+		&:nth-child(3){
+		  transform: rotate(60deg);
+		}
+		&:nth-child(4){
+		  transform: rotate(90deg);
+		}
+		&:nth-child(5){
+		  transform: rotate(120deg);
+		}
+		&:nth-child(6){
+		  transform: rotate(150deg);
+		}
+		&:nth-child(1):before{
+		  animation: fade 1.2s 0s infinite;
+		}
+		&:nth-child(2):before{
+		  animation: fade 1.2s .1s infinite;
+		}
+		&:nth-child(3):before{
+		  animation: fade 1.2s .2s infinite;
+		}
+		&:nth-child(4):before{
+		  animation: fade 1.2s .3s infinite;
+		}
+		&:nth-child(5):before{
+		  animation: fade 1.2s .4s infinite;
+		}
+		&:nth-child(6):before{
+		  animation: fade 1.2s .5s infinite;
+		}
+		&:nth-child(1):after{
+		  animation: fade 1.2s .6s infinite;
+		}
+		&:nth-child(2):after{
+		  animation: fade 1.2s .7s infinite;
+		}
+		&:nth-child(3):after{
+		  animation: fade 1.2s .8s infinite;
+		}
+		&:nth-child(4):after{
+		  animation: fade 1.2s .9s infinite;
+		}
+		&:nth-child(5):after{
+		  animation: fade 1.2s 1.0s infinite;
+		}
+		&:nth-child(6):after{
+		  animation: fade 1.2s 1.1s infinite;
+		}
+	  }
+	  .cover{
+			position: absolute;
+			top:50%;
+			left:50%;
+			margin-left:-10px;
+			margin-top:-10px;
+			width:20px;
+			height:20px;
+			border-radius: 50%;
+			background-color: #FFF;
+	  }
+	}
+  }
+  @keyframes fade {
+	0%{opacity:.1}
+	100%{opacity: 1}
+  }
+```
+
+### 11.3 containers/Home/index.js
+containers/Home/index.js
+```js
+import React,{Component} from 'react';
+import HomeHeader from '../../components/HomeHeader';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/home';
+import './index.less';
+import Swiper from '../../components/Swiper';
+import Loading from '../../components/Loading';
+import {upLoadMore,store,downRefresh} from '../../utils';
+class Home extends Component{
+	componentDidMount() {
+		if (this.props.lessons.list.length == 0) {
+			this.props.getSliders();
+		    this.props.getLessons();
+		} else {
+			this.mainContent.scrollTop=store.get('scrollTop');
+		}
+		upLoadMore(this.mainContent,this.props.getLessons);
+		downRefresh(this.mainContent,this.props.fetchLessons);
+	}
+	componentWillUnmount() {
+		store.set('scrollTop',this.mainContent.scrollTop);
+	}
+	render() {
+		const {currentCategory,setCurrentCategory,fetchLessons,lessons:{list,loading,hasMore}}=this.props;
+		console.log('loading',loading,hasMore,'hasMore');
+		return (
+			<div className="home">
+				<HomeHeader
+					currentCategory={currentCategory}
+					fetchLessons={fetchLessons}
+					setCurrentCategory={setCurrentCategory} />
+				<div className="main-content" ref={ref=>this.mainContent = ref}>
+					<Swiper sliders={this.props.sliders} />
+					<div className="lesson-list" >
+						<div><i className="iconfont icon-kecheng-copy"></i>全部课程</div>
+						{
+							list.map(lesson => (
+								<div key={lesson.id} className="lesson">
+									<img src={lesson.poster} />
+									<p>{lesson.title}</p>
+									<p>{lesson.price}</p>
+								</div>
+							))
+						}
+					</div>
+					{
+						loading? <Loading />:<div className="load-more" onClick={this.props.getLessons}>{hasMore?'点击加载更多':'到底了'}</div>
+					}
+				</div>
+				
+			</div>
+		)
+	}
+}
+export default connect(state => state.home,actions)(Home);
+```
+
+### 11.4 Home/index.less
+containers/Home/index.less
+```less
+.home{
+	.main-content{
+		position: fixed;
+		top:56px;
+		bottom:54px;
+		overflow: hidden;
+		overflow-y: scroll;
+		width:100%;
+		.lesson-list{
+			padding:10px 7.5px;
+			margin:0 auto;
+			.lesson{
+				border-radius: 5px;
+				box-shadow: 1px 1px 2px 1px #c5c5c5,-1px -1px 2px 1px #c5c5c5;
+				overflow: hidden;
+				text-align:center;
+				margin:18px 0;
+				img{
+					width:100%;
+					border-radius: 5px 5px 0px 0px;
+				}
+				p{
+					line-height: 200%;
+				}
+				p:nth-child(2){
+					color:#bbbbbb;
+				}
+				p:nth-child(3){
+					color:#ed3a3a;
+				}
+			}
+		}
+		.load-more{
+			height:30px;
+			line-height:30px;
+			width:100%;
+			text-align:center;
+			border-radius: 5px;
+			background-color:green;
+		}
+	}
+}
+```
 
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)

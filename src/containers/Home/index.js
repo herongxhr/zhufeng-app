@@ -22,6 +22,7 @@ class Home extends Component{
 	}
 	render() {
 		const {currentCategory,setCurrentCategory,fetchLessons,lessons:{list,loading,hasMore}}=this.props;
+		console.log('loading',loading,hasMore,'hasMore');
 		return (
 			<div className="home">
 				<HomeHeader
@@ -43,7 +44,7 @@ class Home extends Component{
 						}
 					</div>
 					{
-						loading? <Loading />:(hasMore?<div className="load-more" onClick={this.props.getLessons}>{hasMore?'点击加载更多':'到底了'}</div>:null)
+						loading? <Loading />:<div className="load-more" onClick={this.props.getLessons}>{hasMore?'点击加载更多':'到底了'}</div>
 					}
 				</div>
 				

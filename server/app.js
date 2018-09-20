@@ -17,21 +17,24 @@ app.get('/sliders',function (req,res) {
 });
 let lessons=require('./mock/lessons');
 app.get('/lessons/:type',function (req,res) {
-	let type=req.params.type;
-	let {offset,limit}=req.query;
-	offset=isNaN(offset)? 0:parseInt(offset);
-	limit=isNaN(limit)? 5:parseInt(limit);
-	let data=_.cloneDeep(lessons);
-	if (type!='all') {
-		data=data.filter(lesson=>lesson.type==type);
-	}
-	let list=data.slice(offset,offset+limit);
-	list.forEach(item => {
-		item.title=item.title+Math.random();
-	});
-	let hasMore=offset+limit<data.length;
-	res.json({
-		hasMore,
-		list
-	});
+	setTimeout(function () {
+		let type=req.params.type;
+		let {offset,limit}=req.query;
+		offset=isNaN(offset)? 0:parseInt(offset);
+		limit=isNaN(limit)? 5:parseInt(limit);
+		let data=_.cloneDeep(lessons);
+		if (type!='all') {
+			data=data.filter(lesson=>lesson.type==type);
+		}
+		let list=data.slice(offset,offset+limit);
+		list.forEach(item => {
+			item.title=item.title+Math.random();
+		});
+		let hasMore=offset+limit<data.length;
+		res.json({
+			hasMore,
+			list
+		});
+	},500);
+	
 });
