@@ -7,6 +7,7 @@ import Lesson from './containers/Lesson';
 import Profile from './containers/Profile';
 import Detail from './containers/Detail';
 import Login from './containers/Login';
+import Reg from './containers/Reg';
 render(<Router>
 	<Switch>
 		<App>
@@ -15,6 +16,7 @@ render(<Router>
 			<Route path="/profile" component={Profile} />
 			<Route path="/detail" component={Detail} />
 			<Route path="/login" component={Login} />
+			<Route path="/reg" component={Reg} />
 		</App>
 	</Switch>
 </Router>,document.querySelector('#root'));

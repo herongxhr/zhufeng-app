@@ -1247,13 +1247,176 @@ import NavBar from '../../components/NavBar';
 export default class Login extends Component{
 	render() {
 		return (
-			<div className="login">
+			<div className="login-panel">
 				<NavBar title="登录"/>
+
 			</div>
 		)
 	}
 }
 ```
+
+## 15. 登录
+### 15.1 Login/index.js
+src/containers/Login/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import {Link} from 'react-router-dom';
+import NavBar from '../../components/NavBar';
+import profile from '../../common/images/profile.png';
+export default class Login extends Component{
+	render() {
+		return (
+			<div className="login-panel">
+				<NavBar title="登录" />
+				<div className="login-logo">
+				  <img  src={profile} />
+				</div>
+				<input type="text" placeholder="手机号" />
+				<input type="text" placeholder="密码" />
+				<Link to="/reg">前往注册</Link>
+			    <button>登&nbsp;录</button>
+			</div>
+		)
+	}
+}
+
+```
+
+### 15.2 Login/index.less
+src/containers/Login/index.less
+```less
+.login-panel{
+	padding:56px 17px;
+	display:flex;
+	flex-direction: column;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	background:#FFF;
+	z-index: 20;
+
+	.login-logo{
+		display:flex;
+		height:223px;
+		width:100%;
+		justify-content: center;
+		align-items: center;
+		img{
+			height:62px;
+			width:62px;
+		}
+	}
+	input{
+		width:100%;
+		outline:none;
+		border:1px solid #CCC;
+		border-radius: 5px;
+		height:42px;
+		margin-bottom:20px;
+		padding-left:10px;
+		box-sizing: border-box;
+	}
+	a{
+		color:#188AE4;
+		margin-bottom:20px;
+	}
+	button{
+		width:100%;
+		background-color: #188AE4;
+		color:#FFF;
+		height:40px;
+		line-height: 40px;
+		text-align:center;
+		font-size:16px;
+		border-radius:5px;
+	}
+}
+```
+
+### 15.3 Reg/index.js
+containers/Reg/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import {Link} from 'react-router-dom';
+import NavBar from '../../components/NavBar';
+import profile from '../../common/images/profile.png';
+export default class Login extends Component{
+	render() {
+		return (
+			<div className="login-panel">
+				<NavBar title="注册" />
+				<div className="login-logo">
+				  <img  src={profile} />
+				</div>
+				<input type="text" placeholder="手机号" />
+				<input type="text" placeholder="密码" />
+				<Link to="/login">前往登录</Link>
+			    <button>注&nbsp;册</button>
+			</div>
+		)
+	}
+}
+
+```
+
+### 15.4 containers/Reg/index.less
+containers/Reg/index.less
+```less
+.login-panel{
+	padding:56px 17px;
+	display:flex;
+	flex-direction: column;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	background:#FFF;
+	z-index: 20;
+
+	.login-logo{
+		display:flex;
+		height:223px;
+		width:100%;
+		justify-content: center;
+		align-items: center;
+		img{
+			height:62px;
+			width:62px;
+		}
+	}
+	input{
+		width:100%;
+		outline:none;
+		border:1px solid #CCC;
+		border-radius: 5px;
+		height:42px;
+		margin-bottom:20px;
+		padding-left:10px;
+		box-sizing: border-box;
+	}
+	a{
+		color:#188AE4;
+		margin-bottom:20px;
+	}
+	button{
+		width:100%;
+		background-color: #188AE4;
+		color:#FFF;
+		height:40px;
+		line-height: 40px;
+		text-align:center;
+		font-size:16px;
+		border-radius:5px;
+	}
+}
+```
+
 
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
