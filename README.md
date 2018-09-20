@@ -1217,6 +1217,44 @@ src/main.js
 <Route path="/detail" component={Detail} />
 ```
 
+## 14. 导航菜单
+### 14.1 NavBar/index.js 
+components/NavBar/index.js 
+```js
+import React, {Component} from 'react';
+import './index.less'
+import {withRouter} from 'react-router-dom';
+class NavBar extends Component {
+  render() {
+    return (
+      <div className="navbar">
+			{this.props.title}
+			<i className="iconfont icon-fanhui" onClick={()=>this.props.history.goBack()}></i>
+      </div>
+    )
+  }
+}
+export default withRouter(NavBar);
+```
+
+### 14.2 Login/index.js
+containers/Login/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import {Link} from 'react-router-dom';
+import NavBar from '../../components/NavBar';
+export default class Login extends Component{
+	render() {
+		return (
+			<div className="login">
+				<NavBar title="登录"/>
+			</div>
+		)
+	}
+}
+```
+
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
 - [react-swipe](https://github.com/voronianski/react-swipe)
