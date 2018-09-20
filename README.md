@@ -7,11 +7,12 @@ yarn init -y
 
 ## 2. 安装依赖
 ```js
-yarn add react react-dom react-router-dom
+yarn add react react-dom react-router-dom 
 yarn add yarn add babel-loader @babel/core @babel/preset-env @babel/preset-react
-yarn add redux react-redux redux-logger redux-promise redux-thunk 
+yarn add redux react-redux redux-logger redux-promise redux-thunk react-router-redux
 yarn add  style-loader css-loader less-loader less url-loader
 yarn add webpack webpack-cli webpack-dev-server
+yarn add express body-parser express-session lodash
 ```
 
 ## 3. 说明
@@ -1417,6 +1418,419 @@ containers/Reg/index.less
 }
 ```
 
+## 16. 实现会话
+### 16.1 server/app.js
+```js
+let express=require('express');
+let _=require('lodash');
+let bodyParser = require('body-parser');
+let session = require('express-session');
+let app=express();
+
+app.use(session({
+	resave:true,
+	secret:'zfpx',
+	saveUninitialized:true
+}));
+app.use(bodyParser.json());
+app.use(function (req,res,next) {
+	res.header('Access-Control-Allow-Methods','PUT,POST,GET,DELETE,OPTIONS');
+	res.header('Access-Control-Allow-Origin','http://localhost:8080');
+	res.header('Access-Control-Allow-Headers','Content-Type,Accept');
+	res.header('Access-Control-Allow-Credentials','true');
+	if (req.method === 'OPTIONS') {
+		return res.sendStatus(200);
+	}
+	next();
+});
+app.listen(3000);
+let sliders=require('./mock/sliders');
+app.get('/sliders',function (req,res) {
+	res.json(sliders);
+});
+let lessons=require('./mock/lessons');
+app.get('/lessons/:type',function (req,res) {
+	setTimeout(function () {
+		let type=req.params.type;
+		let {offset,limit}=req.query;
+		offset=isNaN(offset)? 0:parseInt(offset);
+		limit=isNaN(limit)? 5:parseInt(limit);
+		let data=_.cloneDeep(lessons);
+		if (type!='all') {
+			data=data.filter(lesson=>lesson.type==type);
+		}
+		let list=data.slice(offset,offset+limit);
+		list.forEach(item => {
+			item.title=item.title+Math.random();
+		});
+		let hasMore=offset+limit<data.length;
+		res.json({
+			hasMore,
+			list
+		});
+	},500);
+	
+});
+let users = [];
+//users=[{username:'zfpx',password:'123'}]
+app.post('/api/reg',function(req,res){
+	let user = req.body;//取得请求体
+	let oldUser = users.find(item=>item.username == user.username);
+	if(oldUser){
+	  //两种异常 1.服务异常 2.业务异常
+	  res.json({code:1,error:'用户名重复'});//如果失败有一个error
+	}else{
+	  users.push(user);
+	  // code=0表示一切正常成功，非0表示失败
+	  res.json({code:0,success:'注册成功',user});//如果成功有一个success
+	}
+  });
+  app.post('/api/login',function(req,res){
+	 let user = req.body;//取得登录的请求体
+	 let oldUser = users.find(item=>item.username==user.username&&item.password==user.password);
+	 if(oldUser){
+	   //如果找到了用户名和密码相同的用户，表示登录成功,把用户存放入session中
+	   req.session.user = oldUser;
+	   res.json({code:0,success:"登录成功",user});
+	 }else{
+	   res.json({code:1,error:'用户名或密码错误'});
+	 }
+  });
+  app.get('/api/logout',function(req,res){
+	 req.session.user = null;
+	 res.json({code:0,success:'退出成功'});
+  });
+  //验证用户是否登录
+  app.get('/api/validate',function(req,res){
+	 if(req.session.user){
+	   res.json({code:0,user:req.session.user});
+	 }else{
+	   res.json({code:1,error:'此用户未登录'});
+	 }
+  });
+```
+
+### 16.2 src/api/index.js
+src/api/index.js
+```js
+const API_HOST='http://localhost:3000';
+export const get=(url) => {
+	return fetch(API_HOST+url,{
+		method: 'GET',
+		credentials: 'include',//跨域携带cookie
+		headers: {
+			accept:'application/json'
+		}
+	}).then(res=>res.json());
+}
+export const post=(url,data) => {
+	return fetch(API_HOST+url,{
+		method: 'POST',
+		body: JSON.stringify(data),
+		headers: {
+			'Content-Type': 'application/json',
+			'Accept':'application/json'
+		}
+	}).then(res=>res.json());
+}
+```
+
+### 16.3 Login/index.js
+src/containers/Login/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import {Link} from 'react-router-dom';
+import NavBar from '../../components/NavBar';
+import profile from '../../common/images/profile.png';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/session';
+class Login extends Component{
+	handleLogin = ()=>{
+		let username = this.username.value;
+		let password = this.password.value;
+		this.props.login({username,password});
+	  }
+	render() {
+		return (
+			<div className="login-panel">
+				<NavBar title="登录" />
+				<div className="login-logo">
+				  <img  src={profile} />
+				</div>
+				<input ref={input=>this.username=input}  type="text" placeholder="手机号" />
+				<input ref={input=>this.password=input} type="text" placeholder="密码" />
+				<Link to="/reg">前往注册</Link>
+				<button onClick={this.handleLogin}>登&nbsp;录</button>
+			</div>
+		)
+	}
+}
+
+export default connect(
+	state=>state.session,
+	actions
+)(Login);
+```
+
+### 16.4 Profile/index.js
+src/containers/Profile/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import profile from '../../common/images/profile.png';
+import {Link} from 'react-router-dom';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/session';
+class Profile extends Component{
+	render() {
+		return (
+			<div className="profile">
+				<div className="profile-bg">
+					<img src={profile}/>
+					<div className="login-btn">
+						
+						{this.props.user?this.props.user.username:<Link to="/login">登录</Link>}
+					</div>
+				</div>
+			</div>
+		)
+	}
+}
+export default connect(
+	state=>state.session
+)(Profile);
+```
+
+### 16.5 Reg/index.js
+src/containers/Reg/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import {Link} from 'react-router-dom';
+import NavBar from '../../components/NavBar';
+import profile from '../../common/images/profile.png';
+import {connect} from 'react-redux';
+import actions from '../../store/actions/session';
+class Reg extends Component{
+	handleReg = ()=>{
+		let username = this.username.value;
+		let password = this.password.value;
+		this.props.reg({username,password});
+	  }
+	render() {
+		return (
+			<div className="login-panel">
+				<NavBar title="注册" />
+				<div className="login-logo">
+				  <img  src={profile} />
+				</div>
+				<input ref={input=>this.username=input}  type="text" placeholder="手机号" />
+				<input ref={input=>this.password=input} type="text" placeholder="密码" />
+				<Link to="/login">前往登录</Link>
+				<button
+					 onClick={this.handleReg}
+				>注&nbsp;册</button>
+			</div>
+		)
+	}
+}
+export default connect(
+	state=>state.session,
+	actions
+  )(Reg);
+
+```
+
+### 16.6 src/store/action-types.js
+src/store/action-types.js
+```js
+
+export const SET_CURRENT_CATEGORY='SET_CURRENT_CATEGORY';
+
+export const SET_SLIDERS='SET_SLIDERS';
+
+export const SET_LOADING_LESSONS = 'SET_LOADING_LESSONS';
+export const SET_LESSONS='SET_LESSONS';
+export const FETCH_LESSONS='FETCH_LESSONS';
+
+//注册
+export const REG = 'REG';
+//登录
+export const LOGIN = 'LOGIN';
+//退出
+export const LOGOUT = 'LOGOUT';
+
+//清空消息
+export const CLEAR_MESSAGES = 'CLEAR_MESSAGES';
+export const VALIDATE = 'VALIDATE';
+```
+
+### 16.7 store/index.js
+src/store/index.js
+```js
+import {createStore,applyMiddleware,compose } from 'redux';
+import reducers from './reducers';
+import logger from 'redux-logger';
+import thunk from 'redux-thunk';
+import promise from 'redux-promise';
+import {routerMiddleware} from 'react-router-redux';
+import history from './history';
+let router = routerMiddleware(history);
+
+let store =applyMiddleware(router,thunk,promise,logger)(createStore)(reducers);
+window.store = store;
+export default store;
+```
+
+### 16.8 reducers/index.js
+src/store/reducers/index.js
+```js
+import home from './home';
+import session from './session';
+import {combineReducers} from 'redux';
+export default combineReducers({
+	home,
+	session
+});
+```
+
+### 16.9 api/session.js
+src/api/session.js
+```js
+import {get,post} from './index';
+//注册
+export function reg(user){
+  return post('/api/reg',user);//{username,password}
+}
+//登录
+export function login(user){
+  return post('/api/login',user);//{username,password}
+}
+//退出
+export function logout(){
+  return get('/api/logout');
+}
+
+export function validate(){
+  return get('/api/validate');
+}
+```
+
+### 16.10 actions/session.js
+src/store/actions/session.js
+```js
+import * as types from '../action-types';
+import {reg,login,logout,validate} from '../../api/session';
+import {push} from 'react-router-redux';
+export default {
+  reg(user){
+   return function(dispatch,getState){
+     reg(user).then(result=>{
+       let {code,success,error} = result;
+       dispatch({
+         type:types.REG,
+         payload:{success,error}
+       });
+       if (code==0) {//code=0表示成功 成功后跳到登录页
+         dispatch(push('/login'));
+       }
+     })
+   }
+  },
+  login(user){
+    return function(dispatch,getState){
+      login(user).then(result=>{
+        let{code,success,error,user} = result;
+        dispatch({
+          type:types.LOGIN,
+          payload:{success,error,user}
+        });
+        if(code == 0){
+          dispatch(push('/profile'));
+        }
+      })
+    }
+  },
+  logout(){
+     return function(dispatch,getState){
+        logout().then(result=>{
+          let {code,success,error} = result;
+          dispatch({
+            type:types.LOGOUT,
+            payload:{success,error}
+          });
+          dispatch(push('/login'));
+        });
+     }
+  },
+  clearMessages(){
+    return {
+      type:types.CLEAR_MESSAGES
+    }
+  },
+  validate(){
+    return function(dispatch,getState){
+      validate().then(result=>{
+        let {code,success,error,user}= result;
+        dispatch({
+          type:types.VALIDATE,
+          payload:{success,error,user}
+        });
+      });
+    }
+  }
+}
+```
+
+### 16.11 history.js
+src/store/history.js
+```js
+import createHashHistory from 'history/createHashHistory';
+export default createHashHistory();
+```
+
+### 16.11 reducers/session.js
+ src/store/reducers/session.js
+```js
+import * as types from '../action-types';
+//会话
+let initState = {
+  error: '',//错误消息
+  success: '',//成功消息
+  user:null,//如果登录成功的话，需要给此属性赋值为登录用户
+}
+export default function (state = initState, action) {
+  switch (action.type) {
+    case types.REG:///注册方法调用完成后
+      //不需要解构老状态
+     return {
+       ...action.payload
+    };
+    case types.LOGIN:///注册方法调用完成后
+      return {
+        ...action.payload
+      };
+    case types.LOGOUT:///退出方法调用完成后
+      return {
+        ...action.payload
+      };
+    case types.CLEAR_MESSAGES:
+      return {
+        ...state,
+        error: '',
+        success:''
+      };
+    case types.VALIDATE:
+      return {
+        ...state,
+        ...action.payload
+      };
+    default:
+      return state;
+  }
+}
+```
 
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)

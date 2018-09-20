@@ -16,5 +16,5 @@ export const post=(url,data) => {
 			'Content-Type': 'application/json',
 			'Accept':'application/json'
 		}
-	});
+	}).then(res=>res.json());
 }
