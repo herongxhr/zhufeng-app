@@ -1145,6 +1145,78 @@ containers/Detail/index.less
 }
 ```
 
+## 13. 个人中心
+### 13.1 Profile/index.js
+src/containers/Profile/index.js
+```js
+import React,{Component} from 'react';
+import './index.less'
+import profile from '../../common/images/profile.png';
+import {Link} from 'react-router-dom';
+export default class Profile extends Component{
+	render() {
+		return (
+			<div className="profile">
+				<div className="profile-bg">
+					<img src={profile}/>
+					<div className="login-btn">
+						<Link to="/login">登录</Link>
+					</div>
+				</div>
+			</div>
+		)
+	}
+}
+
+```
+
+### 13.2 Profile/index.less
+src/containers/Profile/index.less
+```less
+.profile{
+	.profile-bg{
+		width:100%;
+		height:223px;
+		background-image: url(../../common/images/login_bg.png);
+		background-size:contain;
+		display:flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		img{
+			width:60px;
+			height:60px;
+			border-radius:50%;
+		} 
+		.login-btn{
+			width:60px;
+			height:25px;
+			border-radius: 10px;
+			background:#FFF;
+			color:#188AE4;
+			line-height:25px;
+			text-align:center;
+			font-size:13px;
+			font-weight: bold;
+			margin-top:10px;
+			a{
+				text-decoration: none;
+				&:link{
+					text-decoration: none;
+					color:#188AE4;
+				}
+			}
+		}
+	}
+}
+```
+
+### 13.3 src/main.js
+src/main.js
+```js
+<Route path="/detail" component={Detail} />
+```
+
 ## 参考
 - [transition-group](https://reactcommunity.org/react-transition-group/transition-group)
 - [react-swipe](https://github.com/voronianski/react-swipe)

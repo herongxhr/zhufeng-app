@@ -12,7 +12,7 @@ render(<Router>
 			<Route exact path="/" component={Home} />
 			<Route path="/lesson" component={Lesson}/>
 			<Route path="/profile" component={Profile} />
-			<Route path="/detail" component={Detail}/>
+			<Route path="/detail" component={Detail} />
 		</App>
 	</Switch>
 </Router>,document.querySelector('#root'));
